@@ -15,7 +15,7 @@ class AutoFlag(IntFlag):
 
     def __new__(cls, flag_name):
         """
-        Create custom element with Flag-Enum value.
+        Create new element in the Flag-Enum with the given flag-name.
 
         Parameters
         ----------
@@ -32,6 +32,31 @@ class AutoFlag(IntFlag):
         obj = int.__new__(cls, val)
         obj._value_ = val
         obj.flag_name = flag_name
+        return obj
+
+
+class AutoEnum(IntEnum):
+    """Enum with auto value generation."""
+
+    def __new__(cls, label):
+        """
+        Create new element in the Enum with the given label.
+
+        Parameters
+        ----------
+        label : str
+            Name of the type of activity-file.
+
+        Returns
+        -------
+        obj : ActivityFileType
+            New Enum element.
+
+        """
+        val = len(cls.__members__)
+        obj = int.__new__(cls, val)
+        obj._value_ = val
+        obj.label = label
         return obj
 
 
@@ -210,7 +235,7 @@ class TokenType(IntEnum):
     REFRESH_TKN = c.RFSH_TKN
 
 
-class ActivityFileType(IntEnum):
+class ActivityFileType(AutoEnum):
     """
     Enum for Activity File Type.
 
@@ -218,30 +243,17 @@ class ActivityFileType(IntEnum):
     https://developers.strava.com/docs/reference/#api-Uploads-createUpload
     """
 
-    def __new__(cls, label):
-        """
-        Create new element in the Enum.
-
-        Parameters
-        ----------
-        label : str
-            Name of the type of activity-file.
-
-        Returns
-        -------
-        obj : ActivityFileType
-            New Enum element.
-
-        """
-        val = len(cls.__members__)
-        obj = int.__new__(cls, val)
-        obj._value_ = val
-        obj.label = label
-        return obj
-
     FIT = "fit"
     FIT_GZ = "fit.gz"
     TCX = "tcx"
     TCX_GZ = "tcx.gz"
     GPX = "gpx"
     GPX_GZ = "gpx.gz"
+
+
+class ReqType(AutoEnum):
+    """Enum for HTTP Request Type."""
+
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"

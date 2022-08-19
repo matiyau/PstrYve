@@ -8,10 +8,12 @@ Created on Tue Aug 16 14:58:13 2022.
 
 from .config import Cfg
 from . import consts as c
-from .enums import AccessScope, Sport, TokenType, ActivityFileType
+from .enums import AccessScope, ActivityFileType, Sport, TokenType
+from .enums import ReqType as RT
 from .server import AccessRespServer
 from .web_view import WebApp
-from requests import Request, post
+from datetime import datetime as dt
+from requests import post, Request, request
 from threading import Thread
 import time
 
@@ -104,6 +106,91 @@ class API():
             self.cfg.set_opt(c.RFSH_TKN, resp[c.RFSH_TKN])
             self.cfg.write_to_file()
 
-    def _get_header_auth(self):
+    def req(self, req_type, url, params=None, data=None, file_path=None):
+        """
+        Send a request and return the received response.
+
+        Parameters
+        ----------
+        req_type : PstrYve.ReqType
+            Type of the request.
+        url : str
+            Request URL.
+        params : dict, optional
+            Query parameters. The default is None.
+        data : dict, optional
+            Form data. The default is None.
+        file_path : pathlib.Path like, optional
+            Path of the file to be uploaded. The default is None.
+
+        Returns
+        -------
+        dict
+            Request response.
+
+        """
         self._update_tkns()
-        return {"Authorization": "Bearer %s" % self.cfg.get_opt(c.ACS_TKN)}
+        headers = {"Authorization": "Bearer %s" % self.cfg.get_opt(c.ACS_TKN)}
+        if (file_path is not None):
+            with open(file_path, "r") as f:
+                r = request(req_type.label, url, params=params,
+                            headers=headers, data=data, file={"file": f})
+        else:
+            r = request(req_type.label, url, params=params, headers=headers,
+                        data=data)
+
+        return r.json()
+
+    def create_manual_activity(self, name, sport_type, start_date_local,
+                               elapsed_tm, dist, desc=None, trainer=False,
+                               commute=False):
+        """
+        Create a manual activity for an athlete.
+
+        Refer to 
+        https://developers.strava.com/docs/reference/#api-Activities-createActivity
+
+        Parameters
+        ----------
+        name : str
+            Name of the activity.
+        sport_type : PstrYve.Sport
+            Type of sport.
+        start_date_local : str or float or datetime.datetime
+            ISO 8601 string or Unix timestamp or datetime object specifying the
+            start time of the activity.
+        elapsed_tm : int
+            Activity duration (in seconds).
+        dist : int
+            Distance covered (in meters).
+        desc : str or None, optional
+            Activity description. The default is None.
+        trainer : bool, optional
+            True if the activity was completed on a trainer, False otherwise.
+            The default is False.
+        commute : bool, optional
+            True if the activity was a commute, False otherwise.
+            The default is False.
+
+        Returns
+        -------
+        dict
+            Details of the created activity if successful,
+            Error details otherwise.
+
+        """
+        if (type(start_date_local) == str):
+            date = start_date_local
+        elif (type(start_date_local) == float):
+            date = dt.fromtimestamp(start_date_local).isoformat()
+        elif (type(start_date_local) == dt):
+            date = start_date_local.isoformat()
+
+        data = {"name": name, "type": sport_type.flag_name,
+                "start_date_local": date, "elapsed_time": elapsed_tm,
+                "distance": dist,
+                "description": (desc if desc is not None else ""),
+                "trainer": int(trainer), "commute": int(commute)}
+
+        resp = self.req(RT.POST, c.ACTV_URL, data=data)
+        return resp
