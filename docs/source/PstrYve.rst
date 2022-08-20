@@ -12,6 +12,7 @@ PstrYve package
 
    PstrYve.api
    PstrYve.config
+   PstrYve.consts
    PstrYve.enums
    PstrYve.server
    PstrYve.web_view

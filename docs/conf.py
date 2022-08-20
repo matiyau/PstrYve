@@ -56,7 +56,7 @@ napoleon_include_init_with_doc = True
 napoleon_include_private_with_doc = True
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ['templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -81,7 +81,7 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-add_module_names = False
+add_module_names = True
 
 rst_prolog = """
 .. |br| raw:: html
