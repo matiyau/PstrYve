@@ -11,6 +11,7 @@ Welcome to PstrYve's documentation!
    :caption: Contents:
 
    source/PstrYve
+   readme
 
 
 
