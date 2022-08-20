@@ -297,6 +297,11 @@ class API():
         per_page : int, optional
             Number of items per page. The default is 30.
 
+        Note
+        ----
+        If `per_page` is set to 0, then all activities in the given time-range
+        will be returned. The `page` parameter is ignored in this case.
+
         Returns
         -------
         list of dict
@@ -304,9 +309,20 @@ class API():
             Error details otherwise.
 
         """
-        resp = self.req(RT.GET, c.ACTV_URL + "/%s/comments" % str(actv_id),
-                        params={"page": page, "per_page": per_page})
-        return resp
+        all_cmts = False
+        if (per_page == 0):
+            per_page = 30
+            page = 1
+            all_cmts = True
+        cmts = []
+        while True:
+            resp = self.req(RT.GET, c.ACTV_URL + "/%s/comments" % str(actv_id),
+                            params={"page": page, "per_page": per_page})
+            cmts += resp
+            if ((len(resp) < per_page) or (all_cmts is False)):
+                break
+            page += 1
+        return cmts
 
     def get_actv_kudos(self, actv_id, page=1, per_page=30):
         """
