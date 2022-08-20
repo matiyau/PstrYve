@@ -32,7 +32,7 @@ class API():
             self.cfg.set_opt(c.CSCRT, cscrt)
             rfsh_tkn_valid = False
 
-        if scope.check_flags(self.cfg.get_opt(c.SCOPE)):
+        if not scope.check_flags(self.cfg.get_opt(c.SCOPE)):
             rfsh_tkn_valid = False
 
         if not rfsh_tkn_valid:
@@ -50,6 +50,7 @@ class API():
             self.cfg.set_opt(c.EXPR_AT, str(resp[c.EXPR_AT]))
             self.cfg.set_opt(c.EXPR_IN, str(resp[c.EXPR_IN]))
             self.cfg.set_opt(c.RFSH_TKN, resp[c.RFSH_TKN])
+            self.cfg.set_opt(c.SCOPE, scope.to_str())
             self.cfg.write_to_file()
 
     def _recv_access_resp(self, resp_srv, app):
