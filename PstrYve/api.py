@@ -395,7 +395,7 @@ class API():
         trainer : bool
             True if the activity was completed on a trainer, False otherwise.
         hide : bool
-            True if the activity should be muted, False otherwise.
+            True if the activity should be hidden, False otherwise.
         desc : bool
             Activity description.
         name : str
