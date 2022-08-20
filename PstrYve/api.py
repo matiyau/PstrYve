@@ -715,3 +715,24 @@ class API():
                 break
             page += 1
         return mbrs
+
+    def get_gear(self, gear_id):
+        """
+        Return the details for the given gear.
+
+        Refer to
+        https://developers.strava.com/docs/reference/#api-Gears-getGearById
+
+        Parameters
+        ----------
+        gear_id : str or int
+            Gear ID.
+
+        Returns
+        -------
+        dict
+            Gear details.
+
+        """
+        resp = self.req(RT.GET, c.GEAR_URL + "/" + str(gear_id))
+        return resp
