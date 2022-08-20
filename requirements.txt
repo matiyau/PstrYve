@@ -1,5 +1,5 @@
-requests
 pygit2
+requests
 PySide2
 sphinxcontrib_napoleon
 sphinx_rtd_theme

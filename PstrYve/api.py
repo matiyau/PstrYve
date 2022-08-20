@@ -472,21 +472,45 @@ class API():
         resp = self.req(RT.GET, c.ATHL_URL)
         return resp
 
-    def get_athlete_zones(self):
+    def get_athlete_clubs(self, page=1, per_page=30):
         """
-        Return the zone details of the authenticated user.
+        Return the clubs of the authenticated athlete.
 
         Refer to
-        https://developers.strava.com/docs/reference/#api-Athletes-getLoggedInAthleteZones
+        https://developers.strava.com/docs/reference/#api-Clubs-getLoggedInAthleteClubs
+
+        Parameters
+        ----------
+        page : int, optional
+            Page number. The default is 1.
+        per_page : int, optional
+            Number of items per page. The default is 30.
+
+        Note
+        ----
+        If `per_page` is set to 0, then all clubs will be returned.
+        The `page` parameter is ignored in this case.
 
         Returns
         -------
-        dict
-            Athlete zone details.
+        list of dict
+            List containing club details.
 
         """
-        resp = self.req(RT.GET, c.ATHL_URL + "/zones")
-        return resp
+        all_clbs = False
+        if (per_page == 0):
+            per_page = 30
+            page = 1
+            all_clbs = True
+        clbs = []
+        while True:
+            resp = self.req(RT.GET, c.ATHL_URL + "/clubs",
+                            params={"page": page, "per_page": per_page})
+            clbs += resp
+            if ((len(resp) < per_page) or (all_clbs is False)):
+                break
+            page += 1
+        return clbs
 
     def get_athlete_stats(self):
         """
@@ -503,6 +527,22 @@ class API():
         """
         athl_id = self.get_athlete()["id"]
         resp = self.req(RT.GET, c.ATHL_URL + "s/%s/stats" % str(athl_id))
+        return resp
+
+    def get_athlete_zones(self):
+        """
+        Return the zone details of the authenticated user.
+
+        Refer to
+        https://developers.strava.com/docs/reference/#api-Athletes-getLoggedInAthleteZones
+
+        Returns
+        -------
+        dict
+            Athlete zone details.
+
+        """
+        resp = self.req(RT.GET, c.ATHL_URL + "/zones")
         return resp
 
     def update_athlete_weight(self, weight):
@@ -525,3 +565,153 @@ class API():
         """
         resp = self.req(RT.PUT, c.ATHL_URL, data={"weight": weight})
         return resp
+
+    def get_actv_zones(self, club_id):
+        """
+        Return the details for the given club.
+
+        Refer to
+        https://developers.strava.com/docs/reference/#api-Clubs-getClubById
+
+        Parameters
+        ----------
+        club_id : str or int
+            Club ID.
+
+        Returns
+        -------
+        dict
+            Club details.
+
+        """
+        resp = self.req(RT.GET, c.CLUB_URL + "/" + str(club_id))
+        return resp
+
+    def get_club_actvs(self, club_id, page=1, per_page=30):
+        """
+        Return the activities from the given club.
+
+        Refer to
+        https://developers.strava.com/docs/reference/#api-Clubs-getClubActivitiesById
+
+        Parameters
+        ----------
+        club_id : str or int
+            Club ID.
+        page : int, optional
+            Page number. The default is 1.
+        per_page : int, optional
+            Number of items per page. The default is 30.
+
+        Note
+        ----
+        If `per_page` is set to 0, then all club activities will be returned.
+        The `page` parameter is ignored in this case.
+
+        Returns
+        -------
+        list of dict
+            List containing details of each club activity.
+
+        """
+        all_actv = False
+        if (per_page == 0):
+            per_page = 30
+            page = 1
+            all_actv = True
+        actv = []
+        while True:
+            resp = self.req(RT.GET, c.CLUB_URL + "/%s/activities" %
+                            str(club_id),
+                            params={"page": page, "per_page": per_page})
+            actv += resp
+            if ((len(resp) < per_page) or (all_actv is False)):
+                break
+            page += 1
+        return actv
+
+    def get_club_admins(self, club_id, page=1, per_page=30):
+        """
+        Return the admins of the given club.
+
+        Refer to
+        https://developers.strava.com/docs/reference/#api-Clubs-getClubAdminsById
+
+        Parameters
+        ----------
+        club_id : str or int
+            Club ID.
+        page : int, optional
+            Page number. The default is 1.
+        per_page : int, optional
+            Number of items per page. The default is 30.
+
+        Note
+        ----
+        If `per_page` is set to 0, then all admins will be returned.
+        The `page` parameter is ignored in this case.
+
+        Returns
+        -------
+        list of dict
+            List containing user details of each admin.
+
+        """
+        all_admns = False
+        if (per_page == 0):
+            per_page = 30
+            page = 1
+            all_admns = True
+        admns = []
+        while True:
+            resp = self.req(RT.GET, c.CLUB_URL + "/%s/admins" %
+                            str(club_id),
+                            params={"page": page, "per_page": per_page})
+            admns += resp
+            if ((len(resp) < per_page) or (all_admns is False)):
+                break
+            page += 1
+        return admns
+
+    def get_club_members(self, club_id, page=1, per_page=30):
+        """
+        Return the members of the given club.
+
+        Refer to
+        https://developers.strava.com/docs/reference/#api-Clubs-getClubMembersById
+
+        Parameters
+        ----------
+        club_id : str or int
+            Club ID.
+        page : int, optional
+            Page number. The default is 1.
+        per_page : int, optional
+            Number of items per page. The default is 30.
+
+        Note
+        ----
+        If `per_page` is set to 0, then all members will be returned.
+        The `page` parameter is ignored in this case.
+
+        Returns
+        -------
+        list of dict
+            List containing user details of each member.
+
+        """
+        all_mbrs = False
+        if (per_page == 0):
+            per_page = 30
+            page = 1
+            all_mbrs = True
+        mbrs = []
+        while True:
+            resp = self.req(RT.GET, c.CLUB_URL + "/%s/members" %
+                            str(club_id),
+                            params={"page": page, "per_page": per_page})
+            mbrs += resp
+            if ((len(resp) < per_page) or (all_mbrs is False)):
+                break
+            page += 1
+        return mbrs
