@@ -423,3 +423,73 @@ class API():
 
         resp = self.req(RT.PUT, c.ACTV_URL + "/" + str(actv_id), data=kwargs)
         return resp
+
+    def get_athlete(self):
+        """
+        Return the details of the authenticated user.
+
+        Refer to
+        https://developers.strava.com/docs/reference/#api-Athletes
+
+        Returns
+        -------
+        dict
+            Athlete details.
+
+        """
+        resp = self.req(RT.GET, c.ATHL_URL)
+        return resp
+
+    def get_athlete_zones(self):
+        """
+        Return the zone details of the authenticated user.
+
+        Refer to
+        https://developers.strava.com/docs/reference/#api-Athletes-getLoggedInAthleteZones
+
+        Returns
+        -------
+        dict
+            Athlete zone details.
+
+        """
+        resp = self.req(RT.GET, c.ATHL_URL + "/zones")
+        return resp
+
+    def get_athlete_stats(self):
+        """
+        Return the activity stats of the authenticated user.
+
+        Refer to
+        https://developers.strava.com/docs/reference/#api-Athletes-getStats
+
+        Returns
+        -------
+        dict
+            Athlete stats.
+
+        """
+        athl_id = self.get_athlete()["id"]
+        resp = self.req(RT.GET, c.ATHL_URL + "s/%s/stats" % str(athl_id))
+        return resp
+
+    def update_athlete_weight(self, weight):
+        """
+        Update the weight of the authenticated user.
+
+        Refer to
+        https://developers.strava.com/docs/reference/#api-Athletes-updateLoggedInAthlete
+
+        Parameters
+        ----------
+        weight : float
+            New weight.
+
+        Returns
+        -------
+        dict
+            Profile details of the athlete.
+
+        """
+        resp = self.req(RT.PUT, c.ATHL_URL, data={"weight": weight})
+        return resp
