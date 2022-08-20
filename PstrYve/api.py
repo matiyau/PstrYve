@@ -566,7 +566,7 @@ class API():
         resp = self.req(RT.PUT, c.ATHL_URL, data={"weight": weight})
         return resp
 
-    def get_actv_zones(self, club_id):
+    def get_club(self, club_id):
         """
         Return the details for the given club.
 
