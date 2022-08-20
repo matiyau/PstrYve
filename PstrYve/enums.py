@@ -34,6 +34,18 @@ class AutoFlag(IntFlag):
         obj.flag_name = flag_name
         return obj
 
+    def __str__(self):
+        """
+        Return the string representation of the flag.
+
+        Returns
+        -------
+        str
+            Name of the flag.
+
+        """
+        return self.flag_name
+
 
 class AutoEnum(IntEnum):
     """Enum with auto value generation."""
@@ -58,6 +70,18 @@ class AutoEnum(IntEnum):
         obj._value_ = val
         obj.label = label
         return obj
+
+    def __str__(self):
+        """
+        Return the string representation for the Enum item.
+
+        Returns
+        -------
+        str
+            Label of the item.
+
+        """
+        return self.label
 
 
 class AccessScope(AutoFlag):

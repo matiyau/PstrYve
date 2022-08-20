@@ -134,8 +134,10 @@ class API():
         if (file_path is not None):
             with open(file_path, "r") as f:
                 r = request(req_type.label, url, params=params,
-                            headers=headers, data=data, file={"file": f})
+                            headers=headers, data=data, files={"file": f})
         else:
+            # print(Request(req_type.label, url, params=params, headers=headers,
+            #               data=data).prepare().url)
             r = request(req_type.label, url, params=params, headers=headers,
                         data=data)
 
@@ -147,7 +149,7 @@ class API():
         """
         Create a manual activity for an athlete.
 
-        Refer to 
+        Refer to
         https://developers.strava.com/docs/reference/#api-Activities-createActivity
 
         Parameters
@@ -186,11 +188,237 @@ class API():
         elif (type(start_date_local) == dt):
             date = start_date_local.isoformat()
 
-        data = {"name": name, "type": sport_type.flag_name,
+        data = {"name": name, "type": sport_type,
                 "start_date_local": date, "elapsed_time": elapsed_tm,
                 "distance": dist,
                 "description": (desc if desc is not None else ""),
                 "trainer": int(trainer), "commute": int(commute)}
 
         resp = self.req(RT.POST, c.ACTV_URL, data=data)
+        return resp
+
+    def get_activity(self, actv_id, all_efforts=False):
+        """
+        Return the activity specified by the given ID.
+
+        The activity should be owned by the authenticated user.
+
+        Refer to
+        https://developers.strava.com/docs/reference/#api-Activities-getActivityById
+
+        Parameters
+        ----------
+        actv_id : str or int
+            Activity ID.
+        all_efforts : bool, optional
+            If True, all segment efforts will be included in the returned
+            details. The default is False.
+
+        Returns
+        -------
+        dict
+            Details of the created activity if successful,
+            Error details otherwise.
+
+        """
+        resp = self.req(RT.GET, c.ACTV_URL + "/" + str(actv_id),
+                        params={"include_all_efforts":
+                                all_efforts})
+        return resp
+
+    def get_activities(self, before=None, after=None, page=1, per_page=30):
+        """
+        Return the activities in the specified time-range for the authenticated
+        user.
+
+        Refer to
+        https://developers.strava.com/docs/reference/#api-Activities-getLoggedInAthleteActivities
+
+        Parameters
+        ----------
+        before : str or float or datetime.datetime or None, optional
+            ISO 8601 string or Unix timestamp or datetime object specifying the
+            end of the time range. The default is None.
+        after : str or float or datetime.datetime or None, optional
+            ISO 8601 string or Unix timestamp or datetime object specifying the
+            start of the time range. The default is None.
+        page : int, optional
+            Page number. The default is 1.
+        per_page : int, optional
+            Number of items per page. The default is 30.
+
+        Note
+        ----
+        If `per_page` is set to 0, then all activities in the given time-range
+        will be returned. The `page` parameter is ignored in this case.
+
+        Returns
+        -------
+        list of dict
+            List containing details of each activity if successful,
+            Error details otherwise.
+
+        """
+        all_actvs = False
+        if (per_page == 0):
+            per_page = 30
+            page = 1
+            all_actvs = True
+        params = {"page": page, "per_page": per_page}
+        if before is not None:
+            if (type(before) == str):
+                before = dt.fromisoformat(before).timestamp()
+            elif (type(before) == dt):
+                before = before.timestamp()
+            params["before"] = int(before)
+        actvs = []
+        while True:
+            resp = self.req(RT.GET, c.ATHL_URL + "/activities", params=params)
+            actvs += resp
+            if ((len(resp) < per_page) or (all_actvs is False)):
+                break
+            params["page"] += 1
+        return actvs
+
+    def get_actv_comments(self, actv_id, page=1, per_page=30):
+        """
+        Return the comments on the given activity.
+
+        Refer to
+        https://developers.strava.com/docs/reference/#api-Activities-getCommentsByActivityId
+
+        Parameters
+        ----------
+        actv_id : str or int
+            Activity ID.
+        page : int, optional
+            Page number. The default is 1.
+        per_page : int, optional
+            Number of items per page. The default is 30.
+
+        Returns
+        -------
+        list of dict
+            List containing details of each comment if successful,
+            Error details otherwise.
+
+        """
+        resp = self.req(RT.GET, c.ACTV_URL + "/%s/comments" % str(actv_id),
+                        params={"page": page, "per_page": per_page})
+        return resp
+
+    def get_actv_kudos(self, actv_id, page=1, per_page=30):
+        """
+        Return the kudoers on the given activity.
+
+        Refer to
+        https://developers.strava.com/docs/reference/#api-Activities-getKudoersByActivityId
+
+        Parameters
+        ----------
+        actv_id : str or int
+            Activity ID.
+        page : int, optional
+            Page number. The default is 1.
+        per_page : int, optional
+            Number of items per page. The default is 30.
+
+        Returns
+        -------
+        list of dict
+            List containing user details of each kudoer if successful,
+            Error details otherwise.
+
+        """
+        resp = self.req(RT.GET, c.ACTV_URL + "/%s/kudos" % str(actv_id),
+                        params={"page": page, "per_page": per_page})
+        return resp
+
+    def get_actv_laps(self, actv_id):
+        """
+        Return the laps for the given activity.
+
+        Refer to
+        https://developers.strava.com/docs/reference/#api-Activities-getLapsByActivityId
+
+        Parameters
+        ----------
+        actv_id : str or int
+            Activity ID.
+
+        Returns
+        -------
+        list of dict
+            List containing details for each lap if successful,
+            Error details otherwise.
+
+        """
+        resp = self.req(RT.GET, c.ACTV_URL + "/%s/laps" % str(actv_id))
+        return resp
+
+    def get_actv_zones(self, actv_id):
+        """
+        Return the zones for the given activity.
+
+        Refer to
+        https://developers.strava.com/docs/reference/#api-Activities-getZonesByActivityId
+
+        Parameters
+        ----------
+        actv_id : str or int
+            Activity ID.
+
+        Returns
+        -------
+        list of dict
+            List containing details for each lap if successful,
+            Error details otherwise.
+
+        """
+        resp = self.req(RT.GET, c.ACTV_URL + "/%s/zones" % str(actv_id))
+        return resp
+
+    def update_activity(self, actv_id, **kwargs):
+        """
+        Update the details of the given activity.
+
+        Refer to
+        https://developers.strava.com/docs/reference/#api-Activities-updateActivityById
+
+        Parameters
+        ----------
+        actv_id : str or int
+            Activity ID.
+        commute : bool
+            True if the activity was a commute, False otherwise.
+        trainer : bool
+            True if the activity was completed on a trainer, False otherwise.
+        hide : bool
+            True if the activity should be muted, False otherwise.
+        desc : bool
+            Activity description.
+        name : str
+            Activity name.
+        sport_type : PstrYve.Sport
+            Type of Sport
+        gear_id : str or None
+            ID of the gear used in the activity. If None, any existing gear is
+            cleared from the activity.
+
+        Returns
+        -------
+        dict
+            Updated details of the activity if successful,
+            Error details otherwise.
+
+        """
+        if ("hide" in kwargs):
+            kwargs["hide_from_home"] = kwargs.pop("hide")
+        if ("desc" in kwargs):
+            kwargs["description"] = kwargs.pop("desc")
+        if ("gear_id" in kwargs):
+            if (kwargs["gear_id"] is None):
+                kwargs["gear_id"] = "none"
+
+        resp = self.req(RT.PUT, c.ACTV_URL + "/" + str(actv_id), data=kwargs)
         return resp
