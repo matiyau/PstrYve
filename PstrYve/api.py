@@ -299,8 +299,8 @@ class API():
 
         Note
         ----
-        If `per_page` is set to 0, then all activities in the given time-range
-        will be returned. The `page` parameter is ignored in this case.
+        If `per_page` is set to 0, then all comments will be returned.
+        The `page` parameter is ignored in this case.
 
         Returns
         -------
@@ -340,6 +340,11 @@ class API():
         per_page : int, optional
             Number of items per page. The default is 30.
 
+        Note
+        ----
+        If `per_page` is set to 0, then all kudoers will be returned.
+        The `page` parameter is ignored in this case.
+
         Returns
         -------
         list of dict
@@ -347,9 +352,20 @@ class API():
             Error details otherwise.
 
         """
-        resp = self.req(RT.GET, c.ACTV_URL + "/%s/kudos" % str(actv_id),
-                        params={"page": page, "per_page": per_page})
-        return resp
+        all_kdrs = False
+        if (per_page == 0):
+            per_page = 30
+            page = 1
+            all_kdrs = True
+        kdrs = []
+        while True:
+            resp = self.req(RT.GET, c.ACTV_URL + "/%s/kudos" % str(actv_id),
+                            params={"page": page, "per_page": per_page})
+            kdrs += resp
+            if ((len(resp) < per_page) or (all_kdrs is False)):
+                break
+            page += 1
+        return kdrs
 
     def get_actv_laps(self, actv_id):
         """
