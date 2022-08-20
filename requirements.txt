@@ -1,0 +1,9 @@
+requests
+pygit2
+PySide2
+sphinxcontrib_napoleon
+sphinx_rtd_theme
+m2r2
+sphinxcontrib_napoleon
+sphinx_rtd_theme
+m2r2
