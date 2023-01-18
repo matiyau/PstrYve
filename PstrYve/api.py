@@ -53,20 +53,6 @@ class API():
             self.cfg.set_opt(c.SCOPE, scope.to_str())
             self.cfg.write_to_file()
 
-    def _recv_access_resp(self, resp_srv, app):
-        try:
-            resp_srv.handle_request()
-        except KeyboardInterrupt:
-            print("Cancelled by user")
-
-        resp_srv.server_close()
-        if (resp_srv.access_resp):
-            print("Access Granted")
-        else:
-            print("Access Denied")
-
-        app.end()
-
     def _request_access(self, scope):
         scope_str = scope.to_str()
 
@@ -80,9 +66,14 @@ class API():
 
         access_url = Request("GET", c.ACCESS_URL, params=params).prepare().url
 
-        app = WebApp(access_url)
-        Thread(target=self._recv_access_resp, args=(resp_srv, app)).start()
+        app = WebApp(access_url, resp_srv.handle_request)
         app.run()
+
+        resp_srv.server_close()
+        if (resp_srv.access_resp):
+            print("Access Granted")
+        else:
+            print("Access Denied")
 
         return resp_srv.access_resp
 
@@ -736,3 +727,5 @@ class API():
         """
         resp = self.req(RT.GET, c.GEAR_URL + "/" + str(gear_id))
         return resp
+
+    # def get_route
